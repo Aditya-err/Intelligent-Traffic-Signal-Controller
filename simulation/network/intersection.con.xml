@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<connections xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/connections_file.xsd">
+    <!--
+        Indian Left-Hand Traffic (lefthand=true):
+        - Lane 0: Curb-side (left) lane -> Left turn + Straight
+        - Lane 1: Median-side (right) lane -> Protected Right turn (across oncoming traffic)
+    -->
+
+    <!-- North approach (heading South) -->
+    <connection from="N_to_C" to="C_to_E" fromLane="0" toLane="0"/>
+    <connection from="N_to_C" to="C_to_S" fromLane="0" toLane="0"/>
+    <connection from="N_to_C" to="C_to_W" fromLane="1" toLane="1"/>
+
+    <!-- East approach (heading West) -->
+    <connection from="E_to_C" to="C_to_S" fromLane="0" toLane="0"/>
+    <connection from="E_to_C" to="C_to_W" fromLane="0" toLane="0"/>
+    <connection from="E_to_C" to="C_to_N" fromLane="1" toLane="1"/>
+
+    <!-- South approach (heading North) -->
+    <connection from="S_to_C" to="C_to_W" fromLane="0" toLane="0"/>
+    <connection from="S_to_C" to="C_to_N" fromLane="0" toLane="0"/>
+    <connection from="S_to_C" to="C_to_E" fromLane="1" toLane="1"/>
+
+    <!-- West approach (heading East) -->
+    <connection from="W_to_C" to="C_to_N" fromLane="0" toLane="0"/>
+    <connection from="W_to_C" to="C_to_E" fromLane="0" toLane="0"/>
+    <connection from="W_to_C" to="C_to_S" fromLane="1" toLane="1"/>
+</connections>

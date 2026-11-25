@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+.venv/
+venv/
+env/
+
+# Conda / Environment artifacts
+.conda/
+
+# SUMO generated / runtime outputs
+simulation/network/*.net.xml
+reports/*.xml
+reports/*.csv
+reports/*.json
+*.log
+
+# RL Models & Checkpoints
+models/*.pt
+models/*.pth
+models/*.onnx
+models/*.zip
+
+# Data & Caches
+data/*.csv
+data/*.parquet
+.cache/
+
+# IDEs & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

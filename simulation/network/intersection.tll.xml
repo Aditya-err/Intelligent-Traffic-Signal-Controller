@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tlLogics xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/tllogic_file.xsd">
+    <!--
+        Non-conflicting 4-stage Indian Left-Hand Traffic signal plan (94s fixed cycle).
+        Link groups (12 links ordered clockwise from North: N[0..2], E[3..5], S[6..8], W[9..11]):
+          - North-South Straight & Left : links 0,1 (N) and 6,7 (S)
+          - North-South Protected Right : links 2 (N) and 8 (S)
+          - East-West Straight & Left   : links 3,4 (E) and 9,10 (W)
+          - East-West Protected Right   : links 5 (E) and 11 (W)
+        Every green stage is followed by a 3s Yellow and a 2s All-Red clearance phase.
+    -->
+    <tlLogic id="center" type="static" programID="indian_lht_baseline" offset="0">
+        <!-- North-South Group: Straight + Left -->
+        <phase duration="25" state="GGrrrrGGrrrr"/>
+        <phase duration="3"  state="yyrrrryyrrrr"/>
+        <phase duration="2"  state="rrrrrrrrrrrr"/>
+
+        <!-- North-South Group: Protected Right Turn -->
+        <phase duration="12" state="rrGrrrrrGrrr"/>
+        <phase duration="3"  state="rryrrrrryrrr"/>
+        <phase duration="2"  state="rrrrrrrrrrrr"/>
+
+        <!-- East-West Group: Straight + Left -->
+        <phase duration="25" state="rrrGGrrrrGGr"/>
+        <phase duration="3"  state="rrryyrrrryyr"/>
+        <phase duration="2"  state="rrrrrrrrrrrr"/>
+
+        <!-- East-West Group: Protected Right Turn -->
+        <phase duration="12" state="rrrrrGrrrrrG"/>
+        <phase duration="3"  state="rrrrryrrrrry"/>
+        <phase duration="2"  state="rrrrrrrrrrrr"/>
+    </tlLogic>
+</tlLogics>

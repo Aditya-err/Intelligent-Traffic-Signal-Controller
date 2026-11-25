@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/routes_file.xsd">
+    <!-- Indian mixed urban vehicle types (right-hand-drive / left-hand traffic assumptions) -->
+    <vType id="car" vClass="passenger" length="4.0" width="1.7" minGap="1.5"
+           accel="2.6" decel="4.5" maxSpeed="16.67" sigma="0.5" color="0.2,0.6,0.9"/>
+    <vType id="motorcycle" vClass="motorcycle" length="2.0" width="0.8" minGap="1.0"
+           accel="3.0" decel="5.0" maxSpeed="16.67" sigma="0.5" color="0.95,0.55,0.1"/>
+    <vType id="auto_rickshaw" vClass="passenger" guiShape="delivery" length="2.6" width="1.4" minGap="1.2"
+           accel="1.8" decel="4.0" maxSpeed="12.50" sigma="0.6" color="0.1,0.75,0.2"/>
+    <vType id="bus" vClass="bus" length="11.0" width="2.5" minGap="2.0"
+           accel="1.2" decel="3.5" maxSpeed="13.89" sigma="0.4" color="0.85,0.15,0.15"/>
+    <vType id="truck" vClass="truck" length="7.5" width="2.4" minGap="2.0"
+           accel="1.3" decel="3.5" maxSpeed="13.89" sigma="0.4" color="0.55,0.55,0.55"/>
+
+    <!-- Representative Indian urban traffic composition -->
+    <vTypeDistribution id="indian_mix">
+        <vType refId="motorcycle"    probability="0.38"/>
+        <vType refId="car"           probability="0.30"/>
+        <vType refId="auto_rickshaw" probability="0.20"/>
+        <vType refId="bus"           probability="0.06"/>
+        <vType refId="truck"         probability="0.06"/>
+    </vTypeDistribution>
+
+    <!-- 12 non-U-turn intersection routes (Left-Hand Traffic) -->
+    <!-- Northbound entry (N_to_C) -->
+    <route id="N_straight" edges="N_to_C C_to_S"/>
+    <route id="N_left"     edges="N_to_C C_to_E"/>
+    <route id="N_right"    edges="N_to_C C_to_W"/>
+
+    <!-- Southbound entry (S_to_C) -->
+    <route id="S_straight" edges="S_to_C C_to_N"/>
+    <route id="S_left"     edges="S_to_C C_to_W"/>
+    <route id="S_right"    edges="S_to_C C_to_E"/>
+
+    <!-- Eastbound entry (E_to_C) -->
+    <route id="E_straight" edges="E_to_C C_to_W"/>
+    <route id="E_left"     edges="E_to_C C_to_S"/>
+    <route id="E_right"    edges="E_to_C C_to_N"/>
+
+    <!-- Westbound entry (W_to_C) -->
+    <route id="W_straight" edges="W_to_C C_to_E"/>
+    <route id="W_left"     edges="W_to_C C_to_N"/>
+    <route id="W_right"    edges="W_to_C C_to_S"/>
+
+    <!-- Lightweight 30-minute (0-1800s) arterial demand (NS heavier than EW) -->
+    <flow id="flow_N_straight" type="indian_mix" route="N_straight" begin="0" end="1800" vehsPerHour="260" departLane="best" departSpeed="max"/>
+    <flow id="flow_N_left"     type="indian_mix" route="N_left"     begin="0" end="1800" vehsPerHour="70"  departLane="0"    departSpeed="max"/>
+    <flow id="flow_N_right"    type="indian_mix" route="N_right"    begin="0" end="1800" vehsPerHour="70"  departLane="1"    departSpeed="max"/>
+
+    <flow id="flow_S_straight" type="indian_mix" route="S_straight" begin="0" end="1800" vehsPerHour="240" departLane="best" departSpeed="max"/>
+    <flow id="flow_S_left"     type="indian_mix" route="S_left"     begin="0" end="1800" vehsPerHour="65"  departLane="0"    departSpeed="max"/>
+    <flow id="flow_S_right"    type="indian_mix" route="S_right"    begin="0" end="1800" vehsPerHour="65"  departLane="1"    departSpeed="max"/>
+
+    <flow id="flow_E_straight" type="indian_mix" route="E_straight" begin="0" end="1800" vehsPerHour="180" departLane="best" departSpeed="max"/>
+    <flow id="flow_E_left"     type="indian_mix" route="E_left"     begin="0" end="1800" vehsPerHour="55"  departLane="0"    departSpeed="max"/>
+    <flow id="flow_E_right"    type="indian_mix" route="E_right"    begin="0" end="1800" vehsPerHour="55"  departLane="1"    departSpeed="max"/>
+
+    <flow id="flow_W_straight" type="indian_mix" route="W_straight" begin="0" end="1800" vehsPerHour="170" departLane="best" departSpeed="max"/>
+    <flow id="flow_W_left"     type="indian_mix" route="W_left"     begin="0" end="1800" vehsPerHour="50"  departLane="0"    departSpeed="max"/>
+    <flow id="flow_W_right"    type="indian_mix" route="W_right"    begin="0" end="1800" vehsPerHour="50"  departLane="1"    departSpeed="max"/>
+</routes>
