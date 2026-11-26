@@ -16,6 +16,7 @@ simulation/network/*.net.xml
 reports/*.xml
 reports/*.csv
 reports/*.json
+reports/*.png
 *.log
 
 # RL Models & Checkpoints
