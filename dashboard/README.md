@@ -1,18 +1,21 @@
 # Intelligent-Traffic-RL Dashboard
 
-Interactive Streamlit dashboard for visualizing Phase 6–8 SUMO traffic simulation and Reinforcement Learning results across all five controllers:
+Interactive Streamlit dashboard presenting verified Phase 6–8 SUMO traffic simulation and Reinforcement Learning results across all five controllers:
 - **Fixed-Time**
 - **Q-Learning**
 - **SARSA**
 - **DQN Medium-only**
 - **DQN Curriculum**
 
-## Launch Command (Windows, `E:` Conda Environment)
+## Launch Command (Windows)
+
+From the repository root (`Intelligent-Traffic-RL/`):
 
 ```powershell
-cd "E:\MCA projects\Traffic Signal Controller\Intelligent-Traffic-RL"
 E:\conda_envs\traffic_rl\python.exe -m streamlit run dashboard/app.py
 ```
+
+*(Or `streamlit run dashboard/app.py` if your virtual/Conda environment is already activated.)*
 
 Open the local URL printed by Streamlit (typically `http://localhost:8501`).
 
