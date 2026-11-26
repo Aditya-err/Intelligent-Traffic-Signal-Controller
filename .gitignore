@@ -24,6 +24,7 @@ models/*.pt
 models/*.pth
 models/*.onnx
 models/*.zip
+models/*.json
 
 # Data & Caches
 data/*.csv

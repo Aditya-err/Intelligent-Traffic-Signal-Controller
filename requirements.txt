@@ -1,11 +1,10 @@
-# Phase 2 & 3: SUMO + TraCI + Gymnasium Environment & Baseline Evaluation
+# Phase 2–9: SUMO + TraCI + Gymnasium + Evaluation + CPU PyTorch DQN + Dashboard
 numpy>=2.4.0
 gymnasium>=1.4.0
 traci==1.28.0
 sumolib==1.28.0
 matplotlib>=3.8.0
-
-# Planned for Phase 4–5 (Dashboard & CPU-based PyTorch RL)
-# pandas>=2.2.0
-# torch>=2.2.0  # Install CPU-only wheel on this hardware (Phase 5)
-# streamlit>=1.35.0
+torch>=2.2.0  # CPU-only wheel (--index-url https://download.pytorch.org/whl/cpu)
+pandas>=2.2.0
+streamlit>=1.35.0
+plotly>=5.20.0
