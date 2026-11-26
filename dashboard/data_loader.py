@@ -1,4 +1,4 @@
-"""Resilient CSV data loading and validation for the Streamlit dashboard."""
+"""Resilient CSV data loading, formatting, and validation for the dashboard."""
 
 from __future__ import annotations
 
@@ -28,11 +28,43 @@ CONTROLLER_ORDER: tuple[str, ...] = (
     "dqn_curriculum",
 )
 
+CONTROLLER_COLORS: dict[str, str] = {
+    "Fixed-Time": "#94a3b8",
+    "Q-Learning": "#3b82f6",
+    "SARSA": "#10b981",
+    "DQN Medium-only": "#f59e0b",
+    "DQN Curriculum": "#f43f5e",
+}
+
 SCENARIO_DISPLAY_NAMES: dict[str, str] = {
     "low": "Low (~720 veh/hr)",
     "medium": "Medium (~1,330 veh/hr)",
     "high": "High (~2,200 veh/hr)",
 }
+
+SUMMARY_COLUMN_LABELS: dict[str, str] = {
+    "Scenario": "Scenario",
+    "Controller": "Controller",
+    "num_seeds": "Seeds",
+    "avg_waiting_time_s_mean": "Avg Wait (s)",
+    "avg_waiting_time_s_std": "Wait Std (s)",
+    "avg_waiting_time_s_ci95_half": "Wait 95% CI (±s)",
+    "avg_waiting_time_s_pct_vs_ft": "Wait % vs Fixed-Time",
+    "avg_queue_length_mean": "Avg Queue (veh)",
+    "avg_travel_time_s_mean": "Avg Travel (s)",
+    "throughput_veh_per_hr_mean": "Throughput (veh/hr)",
+    "max_queue_length_mean": "Max Queue (veh)",
+    "vehicles_arrived_mean": "Arrived (veh)",
+    "vehicles_remaining_mean": "Remaining (veh)",
+    "episode_reward_mean": "Episode Reward",
+}
+
+
+def format_p_value(val: float) -> str:
+    """Format p-values cleanly, displaying very small values as '< 0.0001'."""
+    if val < 0.0001:
+        return "< 0.0001"
+    return f"{val:.4f}"
 
 
 @dataclass(frozen=True)
