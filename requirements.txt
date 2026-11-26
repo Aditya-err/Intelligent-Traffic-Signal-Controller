@@ -1,14 +1,11 @@
-# Phase 1: Baseline SUMO Simulation & Validation
-# Note: SUMO itself (including netconvert, sumo, sumo-gui) is installed separately.
-# Python standard library is sufficient to validate Phase 1 XML configurations.
-# TraCI and sumolib are bundled with SUMO ($SUMO_HOME/tools) or installable via pip:
-# traci>=1.20.0
-# sumolib>=1.20.0
+# Phase 2: SUMO + TraCI + Gymnasium Environment
+numpy>=2.4.0
+gymnasium>=1.4.0
+traci==1.28.0
+sumolib==1.28.0
 
-# Planned for Phase 2+ (RL Environment, CPU-based PyTorch & Dashboard)
-# numpy>=1.26.0
+# Planned for Phase 3–5 (Evaluation, Dashboard & CPU-based PyTorch RL)
 # pandas>=2.2.0
 # matplotlib>=3.8.0
-# gymnasium>=0.29.0
-# torch>=2.2.0  # Install CPU-only wheel on this hardware
+# torch>=2.2.0  # Install CPU-only wheel on this hardware (Phase 5)
 # streamlit>=1.35.0
