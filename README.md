@@ -17,13 +17,16 @@ This project trains a **Deep Q-Network (DQN)** agent to observe live queues and 
 
 ---
 
-## 2. Screenshots & Visual Results (`v2`)
+## 2. Live Auto-Playing Demo & Visual Results (`v2`)
 
-### 60 FPS 2D Corridor Replay & RL Decision Panel
+### Live 2D Corridor Replay (Auto-Playing)
+![v2 Corridor Live Demo](v2/docs/images/v2_corridor_demo.gif)
+
+### Side-by-Side Compare: Fixed-Time vs Shared DQN (Auto-Playing)
+![v2 Side-by-Side Live Demo](v2/docs/images/v2_side_by_side_demo.gif)
+
+### Full Dashboard Replay & RL Decision Panel
 ![v2 2D Corridor Replay](v2/docs/images/v2_corridor_replay.png)
-
-### Side-by-Side Compare Mode (Fixed-Time vs Shared DQN)
-![v2 Side-by-Side Compare](v2/docs/images/v2_side_by_side_compare.png)
 
 ### Demo Video Recordings (`videos/`)
 1. **Traffic Simulation — Zoomed Junction:** [`Traffic Simulation-1.mp4`](videos/Traffic%20Simulation-1.mp4) — Live vehicles, brake/headlights, pedestrians, countdowns, and RL Decision Panel.
