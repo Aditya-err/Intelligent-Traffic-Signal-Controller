@@ -96,7 +96,7 @@ def build_canvas_html(replay_data: dict) -> str:
   button:hover {{ filter: brightness(1.1); }}
   input[type=range] {{ flex: 1; min-width: 140px; accent-color: #38bdf8; }}
   canvas {{
-    width: 100%; height: 540px; display: block;
+    width: 100%; height: 640px; display: block;
     background: #1f4d2b; border-radius: 10px; border: 1px solid #334155; cursor: grab;
   }}
   .rl-panel {{
@@ -168,7 +168,7 @@ def build_canvas_html(replay_data: dict) -> str:
     </div>
   </div>
 
-  <canvas id="corridorCanvas" width="1360" height="540"></canvas>
+  <canvas id="corridorCanvas" width="1440" height="660"></canvas>
 
   <div class="rl-panel">
     <div class="rl-header">
@@ -867,7 +867,7 @@ def build_compare_html(left_data: dict, right_data: dict) -> str:
   .grid {{ display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }}
   .pane {{ background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 8px; }}
   .pane-hdr {{ display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px; }}
-  canvas {{ width: 100%; height: 420px; display: block; background: #1f4d2b; border-radius: 6px; }}
+  canvas {{ width: 100%; height: 540px; display: block; background: #1f4d2b; border-radius: 6px; }}
 </style>
 </head>
 <body>
@@ -886,11 +886,11 @@ def build_compare_html(left_data: dict, right_data: dict) -> str:
   <div class="grid">
     <div class="pane">
       <div class="pane-hdr"><strong>Fixed-Time</strong><span id="l-stat">Wait: 0 | Done: 0</span></div>
-      <canvas id="cLeft" width="660" height="420"></canvas>
+      <canvas id="cLeft" width="700" height="540"></canvas>
     </div>
     <div class="pane">
       <div class="pane-hdr"><strong>Shared DQN (RL)</strong><span id="r-stat">Wait: 0 | Done: 0</span></div>
-      <canvas id="cRight" width="660" height="420"></canvas>
+      <canvas id="cRight" width="700" height="540"></canvas>
     </div>
   </div>
 </div>
@@ -1038,7 +1038,7 @@ def _page_traffic_simulation() -> None:
             return
         components.html(
             build_compare_html(load_replay_json(f_path), load_replay_json(d_path)),
-            height=540,
+            height=680,
             scrolling=False,
         )
         return
@@ -1048,7 +1048,7 @@ def _page_traffic_simulation() -> None:
         st.error(f"Replay file not found: `{replay_path}`.")
         return
     data = load_replay_json(replay_path)
-    components.html(build_canvas_html(data), height=880, scrolling=False)
+    components.html(build_canvas_html(data), height=990, scrolling=False)
 
 
 def _page_controller_comparison(summary_df: pd.DataFrame | None) -> None:
