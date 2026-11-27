@@ -211,17 +211,7 @@ def record_replay(
                     ns_lamp = _lamp_from_char(ryg[0]) if len(ryg) > 4 else "R"
                     ew_lamp = _lamp_from_char(ryg[4]) if len(ryg) > 4 else "R"
 
-                    if controller_name == "dqn":
-                        mgr = ctrl.managers[jid]
-                        if mgr.state in ("YELLOW", "ALL_RED"):
-                            cd = int(max(0, mgr.transition_timer))
-                        else:
-                            cd = int(max(0, config.MIN_GREEN_S - mgr.time_in_green))
-                    else:
-                        nxt = traci.trafficlight.getNextSwitch(jid)
-                        cd = int(max(0.0, round(nxt - now)))
-
-                    tls_data[jid] = {"ns": ns_lamp, "ew": ew_lamp, "cd": cd}
+                    tls_data[jid] = {"ns": ns_lamp, "ew": ew_lamp}
                     jq = sum(
                         traci.edge.getLastStepHaltingNumber(e)
                         for e in JUNCTION_IN_EDGES[jid]
@@ -248,6 +238,31 @@ def record_replay(
                 frames.append(frame)
         finally:
             traci.close()
+
+    # Post-process exact per-arm countdowns:
+    # - When arm is Green: seconds until Green ends.
+    # - When arm is Red/Yellow: seconds until Green starts (includes yellow + all-red).
+    n_frames = len(frames)
+    for jid in ("J1", "J2", "J3"):
+        for arm in ("ns", "ew"):
+            cd_key = f"cd_{arm}"
+            for i in range(n_frames):
+                cur_state = frames[i]["tls"][jid][arm]
+                t_now = frames[i]["t"]
+                target_found = None
+                if cur_state == "G":
+                    for j in range(i + 1, n_frames):
+                        if frames[j]["tls"][jid][arm] != "G":
+                            target_found = frames[j]["t"] - t_now
+                            break
+                else:
+                    for j in range(i + 1, n_frames):
+                        if frames[j]["tls"][jid][arm] == "G":
+                            target_found = frames[j]["t"] - t_now
+                            break
+                if target_found is None:
+                    target_found = max(0.0, duration_s - t_now)
+                frames[i]["tls"][jid][cd_key] = max(1, int(round(target_found)))
 
     payload = {
         "meta": {

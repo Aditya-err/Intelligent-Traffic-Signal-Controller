@@ -92,14 +92,17 @@ def extract_network_geometry(net_path: Path = config.NET_FILE) -> Dict[str, Any]
         "max_y": round(max(all_y), 1) if all_y else 280.0,
     }
 
+    tl_coords = {
+        j["id"]: [j["x"], j["y"]]
+        for j in junction_polys
+        if j["id"] in config.JUNCTION_COORDS
+    }
+
     return {
         "bounds": bounds,
         "vehicle_lanes": vehicle_lanes,
         "sidewalk_lanes": sidewalk_lanes,
         "crossings": crossings,
         "junctions": junction_polys,
-        "tl_coords": {
-            jid: [round(x, 2), round(y, 2)]
-            for jid, (x, y) in config.JUNCTION_COORDS.items()
-        },
+        "tl_coords": tl_coords,
     }

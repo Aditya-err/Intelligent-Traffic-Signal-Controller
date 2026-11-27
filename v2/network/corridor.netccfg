@@ -12,7 +12,7 @@
     <no-turnarounds value="true" />
     <crossings.guess value="true" />
     <walkingareas value="true" />
-    <junctions.corner-detail value="5" />
+    <junctions.corner-detail value="12" />
   </processing>
   <tls_building>
     <tls.default-type value="static" />

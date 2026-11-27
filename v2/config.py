@@ -60,7 +60,7 @@ SIDEWALK_WIDTH_M = 2.0              # Pedestrian sidewalk width (m)
 CORRIDOR_SPEED_MPS = 13.89          # 50 km/h
 CROSS_STREET_SPEED_MPS = 11.11      # 40 km/h
 CURVE_SAMPLE_POINTS = 11            # Spline sample points for smooth curved edges
-CARRIAGEWAY_OFFSET_M = 4.2          # Half-separation between opposing centerlines (spreadType="center")
+CARRIAGEWAY_OFFSET_M = 5.2          # Half-separation between opposing centerlines (spreadType="center")
 
 # ---------------------------------------------------------------------------
 # Signal Safety Rules & Baseline Controller Settings (Phase 3)

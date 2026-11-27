@@ -199,13 +199,6 @@ def build_statistical_tests(rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
             t_stat, p_t = paired_t_test(a_vals, b_vals)
             p_perm = exact_sign_flip_permutation_test(a_vals, b_vals)
 
-            if diff < -1e-6:
-                direction = f"Better than {base}"
-            elif diff > 1e-6:
-                direction = f"Worse than {base}"
-            else:
-                direction = "No difference"
-
             records.append(
                 {
                     "comparison": f"{ctrl} vs {base}",
@@ -217,7 +210,7 @@ def build_statistical_tests(rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
                     "t_stat": round(t_stat, 3),
                     "p_ttest_raw": round(p_t, 6),
                     "p_perm_raw": round(p_perm, 6),
-                    "direction": direction,
+                    "direction": "",
                 }
             )
 
@@ -227,7 +220,18 @@ def build_statistical_tests(rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     for idx, rec in enumerate(records):
         rec["p_ttest_holm"] = holm_t[idx]
         rec["p_perm_holm"] = holm_p[idx]
-        rec["significant"] = "Yes" if (holm_t[idx] < 0.05 and holm_p[idx] < 0.05) else "No"
+        is_sig = holm_t[idx] < 0.05 and holm_p[idx] < 0.05
+        rec["significant"] = "Yes" if is_sig else "No"
+        if not is_sig:
+            rec["direction"] = "No significant difference"
+        elif rec["diff_s"] < -1e-6:
+            base = rec["comparison"].split(" vs ")[1]
+            rec["direction"] = f"Better than {base}"
+        elif rec["diff_s"] > 1e-6:
+            base = rec["comparison"].split(" vs ")[1]
+            rec["direction"] = f"Worse than {base}"
+        else:
+            rec["direction"] = "No significant difference"
 
     return records
 

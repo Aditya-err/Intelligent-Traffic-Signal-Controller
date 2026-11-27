@@ -103,4 +103,16 @@ E:\conda_envs\traffic_rl\python.exe -m unittest discover -s v2\tests -t . -v
 - **Why Parameter Sharing?** All 3 junctions (`J1`, `J2`, `J3`) share identical 4-way LHT geometry and phase structure, so one shared MLP (`10 → 128 → 64 → 2`) collects `3×` more experience per episode and trains cleanly on CPU.
 - **Hard Safety Layer:** Enforces `10 s` min green, `3 s` yellow, `2 s` all-red, and `60 s` max green outside the neural network.
 - **Reward Formula:** $r = -(1.0 \sum q_i + 0.05 \sum \text{wait}_i + 2.0 \cdot \mathbb{1}_{\text{switch}})$.
-- **Summary of Findings:** Shared DQN cuts average waiting time by ~25–30% versus Fixed-Time across all demand levels, while trailing SUMO Actuated slightly because DQN acts on a `5 s` decision interval rather than `1 s` induction-loop gap-out.
+- **Summary of Findings:** Shared DQN cuts average waiting time by ~25–32% versus Fixed-Time across all demand levels, and trails SUMO Actuated at Low and Medium demand. A likely reason (not tested) is that DQN acts on a `5 s` decision interval rather than `1 s` induction-loop gap-out.
+- **Controllers not in v2:** Q-Learning and SARSA from v1 are preserved in the `/v1` folder and are not part of the v2 comparison.
+
+---
+
+## Limitations
+- **Simulation only:** Evaluated in Eclipse SUMO 1.28.0, not on live road hardware.
+- **Single corridor:** One 3-junction arterial (`J1–J2–J3`); results may differ on larger city grids.
+- **Non-saturated High demand:** High demand (~1660 veh/hr) does not saturate this corridor, so the benefit of RL under heavy congestion is not tested.
+- **Evaluation teleports:** A few 1-hour evaluation episodes recorded SUMO teleports: `fixed_time` (`medium`, `seed=1008`, 2 teleports), `fixed_time` (`high`, `seed=1008`, 2 teleports), and `actuated` (`high`, `seed=1007`, 5 teleports).
+- **v1 vs v2 comparability:** v1 and v2 results are not directly comparable because the road network is different.
+- **Training vs evaluation horizon:** DQN was trained with `900 s` episodes but evaluated on 1-hour (`3600 s`) episodes.
+- **Simple pedestrian model:** Small crossing rate (`120` ped/hr) using SUMO's default yielding without a pedestrian-specific RL reward.

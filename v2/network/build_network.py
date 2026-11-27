@@ -125,15 +125,17 @@ def write_nodes_xml(path: Path) -> None:
     """Write `corridor.nod.xml` defining 3 traffic_light junctions and 8 boundary nodes."""
     root = ET.Element("nodes")
     for jid, (x, y) in config.JUNCTION_COORDS.items():
-        ET.SubElement(
-            root,
-            "node",
-            id=jid,
-            x=f"{x:.2f}",
-            y=f"{y:.2f}",
-            type="traffic_light",
-            tlType="static",
-        )
+        attrs = {
+            "id": jid,
+            "x": f"{x:.2f}",
+            "y": f"{y:.2f}",
+            "type": "traffic_light",
+            "tlType": "static",
+        }
+        if jid == "J2":
+            # Give the center junction a wider, rounded turning geometry
+            attrs["radius"] = "14.0"
+        ET.SubElement(root, "node", **attrs)
     for bid, (x, y) in config.BOUNDARY_COORDS.items():
         ET.SubElement(
             root,
@@ -256,7 +258,7 @@ def write_netccfg(path: Path) -> None:
     ET.SubElement(proc, "no-turnarounds", value="true")
     ET.SubElement(proc, "crossings.guess", value="true")
     ET.SubElement(proc, "walkingareas", value="true")
-    ET.SubElement(proc, "junctions.corner-detail", value="5")
+    ET.SubElement(proc, "junctions.corner-detail", value="12")
 
     tls = ET.SubElement(root, "tls_building")
     ET.SubElement(tls, "tls.default-type", value="static")

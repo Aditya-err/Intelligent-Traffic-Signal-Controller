@@ -31,7 +31,20 @@ An academic reinforcement learning traffic signal control system built with **Ec
 | **SUMO Actuated** (`type="actuated"`) | `9.94 ± 0.27` | `10.61 ± 0.23` | `11.62 ± 0.54` | `+31.0% to +35.8%` |
 | **Shared DQN** (`10→128→64→2`) | `11.60 ± 0.26` | `11.10 ± 0.20` | **`11.43 ± 0.17`** | **`+25.1% to +32.3%`** |
 
-- Shared DQN significantly outperforms Fixed-Time across all 3 demand levels (`p_perm_holm = 0.0176`) with **0 teleports and 0 collisions** across all 30 evaluation episodes, and edges out SUMO Actuated in High demand (`11.43 s` vs `11.62 s`). In Low and Medium demand, DQN trails Actuated because it decides every `5 s` rather than `1 s` induction-loop gap-out.
+- Shared DQN significantly outperforms Fixed-Time across all 3 demand levels (`p_perm_holm = 0.0176`) with **0 teleports and 0 collisions** across all 30 evaluation episodes, and edges out SUMO Actuated in High demand (`11.43 s` vs `11.62 s`). In Low and Medium demand, DQN trails Actuated; a likely reason (not tested) is that DQN decides every `5 s` rather than using `1 s` induction-loop gap-out.
+
+---
+
+## Screenshots & Results (v2)
+
+### 60 FPS 2D Corridor Replay & RL Decision Panel
+![v2 2D Corridor Replay](v2/docs/images/v2_corridor_replay.png)
+
+### Controller Comparison (10 Held-Out Seeds, Mean ± 95% CI)
+![v2 Controller Comparison](v2/docs/images/v2_controller_comparison.png)
+
+### Shared DQN Training Curves (100-Episode Curriculum)
+![v2 DQN Training Curves](v2/results/training/dqn_training_curves.png)
 
 ---
 

@@ -77,6 +77,15 @@ class TestPhase6Statistics(unittest.TestCase):
         self.assertEqual(by_comp["dqn vs actuated"]["direction"], "Worse than actuated")
         self.assertEqual(by_comp["dqn vs fixed_time"]["significant"], "Yes")
 
+        # When differences are identical/noisy -> Significant == No -> Direction == "No significant difference"
+        tie_rows = []
+        for s in range(1001, 1011):
+            tie_rows.append({"controller": "fixed_time", "demand": "low", "seed": s, "avg_waiting_time_s": 10.0})
+            tie_rows.append({"controller": "actuated", "demand": "low", "seed": s, "avg_waiting_time_s": 10.0 + (0.1 if s % 2 == 0 else -0.1)})
+        tie_stats = build_statistical_tests(tie_rows)
+        self.assertEqual(tie_stats[0]["significant"], "No")
+        self.assertEqual(tie_stats[0]["direction"], "No significant difference")
+
     def test_paired_and_permutation_pvalues(self) -> None:
         a = [10.0, 11.0, 12.0, 10.5, 11.5]
         b = [15.1, 15.8, 17.2, 15.4, 16.9]
