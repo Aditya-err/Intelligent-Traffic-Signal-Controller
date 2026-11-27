@@ -22,6 +22,9 @@ This project trains a **Deep Q-Network (DQN)** agent to observe live queues and 
 ### 60 FPS 2D Corridor Replay & RL Decision Panel
 ![v2 2D Corridor Replay](v2/docs/images/v2_corridor_replay.png)
 
+### Side-by-Side Compare Mode (Fixed-Time vs Shared DQN)
+![v2 Side-by-Side Compare](v2/docs/images/v2_side_by_side_compare.png)
+
 ### Controller Comparison (10 Held-Out Seeds, Mean ± 95% CI)
 ![v2 Controller Comparison](v2/docs/images/v2_controller_comparison.png)
 
