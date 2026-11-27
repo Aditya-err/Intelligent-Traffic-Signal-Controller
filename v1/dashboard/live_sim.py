@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -34,6 +34,10 @@ class SimSnapshot:
     current_group: int
     green_elapsed: int
     tls_state: str
+    ns_countdown: int
+    ew_countdown: int
+    next_decision_in: int
+    min_green_remaining: int
     waiting_time: float
     queue_length: int
     vehicle_count: int
@@ -41,13 +45,17 @@ class SimSnapshot:
     completed_vehicles: int
     waiting_vehicles: int
     terminated: bool
-    vehicles: list[dict[str, Any]]
+    approach_queues: dict[str, int] = field(default_factory=dict)
+    approach_waits: dict[str, float] = field(default_factory=dict)
+    decision_reason: str = ""
+    vehicles: list[dict[str, Any]] = field(default_factory=list)
+    prev_vehicles: list[dict[str, Any]] = field(default_factory=list)
+    interp_ms: int = 420
 
 
 def build_frozen_controller(controller_key: str) -> Any:
     """Load a frozen controller (epsilon=0, eval mode) for live demonstration."""
     if controller_key == "fixed_time":
-        # With delta_time=1s, 25 steps NS / 20 steps EW matches Phase 3 timings
         return FixedTimeController(ns_green_steps=25, ew_green_steps=20)
     if controller_key == "q_learning":
         agent = QLearningAgent(seed=42)
@@ -101,7 +109,6 @@ class LiveSimSession:
         self.max_steps = int(max_steps)
         self.decision_interval = int(decision_interval)
 
-        # Use delta_time=1 so every step_once() advances 1 smooth SUMO second
         self.env = TrafficRLWrapper(
             SumoTrafficEnv(
                 sumocfg_path=SCENARIO_CONFIGS[scenario],
@@ -113,6 +120,7 @@ class LiveSimSession:
                 all_red_time=2,
                 right_turn_green=5,
                 sumo_seed=self.seed,
+                random_depart_offset=4,
             )
         )
         self.controller = build_frozen_controller(controller_key)
@@ -122,6 +130,7 @@ class LiveSimSession:
         self.last_action: int = 0
         self._ticks_since_decision: int = 0
         self._seen_vehicle_ids: set[str] = set()
+        self._prev_vehicles: list[dict[str, Any]] = []
         self.snapshot: SimSnapshot | None = None
 
     def reset(self, warmup_steps: int = 0) -> SimSnapshot:
@@ -133,6 +142,7 @@ class LiveSimSession:
         self.last_action = 0
         self._ticks_since_decision = 0
         self._seen_vehicle_ids = set()
+        self._prev_vehicles = []
         self.snapshot = self._capture_snapshot(
             selected_action=0,
             waiting_time=0.0,
@@ -154,6 +164,9 @@ class LiveSimSession:
             self.is_running = False
             assert self.snapshot is not None
             return self.snapshot
+
+        if self.snapshot is not None:
+            self._prev_vehicles = list(self.snapshot.vehicles)
 
         if isinstance(self.controller, FixedTimeController):
             action = int(self.controller.select_action(self.state))
@@ -179,6 +192,60 @@ class LiveSimSession:
         )
         return self.snapshot
 
+    def _compute_countdowns(
+        self, current_group: int, green_elapsed: int
+    ) -> tuple[int, int, int, int]:
+        """Return (ns_countdown, ew_countdown, next_decision_in, min_green_rem)."""
+        base_env: SumoTrafficEnv = self.env.unwrapped  # type: ignore[assignment]
+        min_green_rem = max(0, base_env.min_green - green_elapsed)
+
+        if isinstance(self.controller, FixedTimeController):
+            pos = self.controller._step_idx % self.controller._cycle_length
+            if current_group == 0:
+                rem = max(1, self.controller.ns_green_steps - pos)
+                return rem, rem + base_env.yellow_time + base_env.all_red_time, rem, min_green_rem
+            ew_pos = max(0, pos - self.controller.ns_green_steps)
+            rem = max(1, self.controller.ew_green_steps - ew_pos)
+            return rem + base_env.yellow_time + base_env.all_red_time, rem, rem, min_green_rem
+
+        mod = self._ticks_since_decision % self.decision_interval
+        next_dec = 0 if mod == 0 else (self.decision_interval - mod)
+        active_rem = max(min_green_rem, next_dec)
+        red_rem = active_rem + base_env.yellow_time + base_env.all_red_time
+        if current_group == 0:
+            return active_rem, red_rem, next_dec, min_green_rem
+        return red_rem, active_rem, next_dec, min_green_rem
+
+    def _explain_decision(
+        self,
+        selected_action: int,
+        current_group: int,
+        min_green_rem: int,
+        approach_queues: dict[str, int],
+        approach_waits: dict[str, float],
+    ) -> str:
+        ns_q = approach_queues.get("N", 0) + approach_queues.get("S", 0)
+        ew_q = approach_queues.get("E", 0) + approach_queues.get("W", 0)
+        ns_w = approach_waits.get("N", 0.0) + approach_waits.get("S", 0.0)
+        ew_w = approach_waits.get("E", 0.0) + approach_waits.get("W", 0.0)
+
+        if isinstance(self.controller, FixedTimeController):
+            return (
+                f"Fixed-Time follows a preset 25s NS / 20s EW timer "
+                f"(currently {'North-South' if current_group == 0 else 'East-West'}; "
+                f"NS queue={ns_q}, EW queue={ew_q})."
+            )
+        if min_green_rem > 0 and selected_action != current_group:
+            return (
+                f"Controller requested {'East-West' if selected_action == 1 else 'North-South'}, "
+                f"but safety interlock holds current green for {min_green_rem}s more (10s minimum green)."
+            )
+        chosen = "North-South (0)" if selected_action == 0 else "East-West (1)"
+        return (
+            f"Controller selected {chosen} based on live queues "
+            f"(NS: {ns_q} veh / {ns_w:.0f}s wait vs EW: {ew_q} veh / {ew_w:.0f}s wait)."
+        )
+
     def _capture_snapshot(
         self,
         *,
@@ -192,10 +259,18 @@ class LiveSimSession:
         vehicles: list[dict[str, Any]] = []
         tls_state = base_env._current_state_str
         waiting_vehicles = 0
+        approach_queues = {"N": 0, "S": 0, "E": 0, "W": 0}
+        approach_waits = {"N": 0.0, "S": 0.0, "E": 0.0, "W": 0.0}
 
         if conn is not None:
             tls_state = conn.trafficlight.getRedYellowGreenState(base_env.TLS_ID)
             cx, cy = conn.junction.getPosition(base_env.TLS_ID)
+
+            for lane_id in base_env.INCOMING_LANES:
+                arm = lane_id[0]
+                approach_queues[arm] += int(conn.lane.getLastStepHaltingNumber(lane_id))
+                approach_waits[arm] += float(conn.lane.getWaitingTime(lane_id))
+
             active_ids = conn.vehicle.getIDList()
             for vid in active_ids:
                 self._seen_vehicle_ids.add(vid)
@@ -218,6 +293,15 @@ class LiveSimSession:
                     }
                 )
 
+        current_group = int(info.get("current_group", base_env._current_group))
+        green_elapsed = int(info.get("green_elapsed", base_env._green_elapsed))
+        ns_cd, ew_cd, next_dec, min_rem = self._compute_countdowns(
+            current_group, green_elapsed
+        )
+        reason = self._explain_decision(
+            selected_action, current_group, min_rem, approach_queues, approach_waits
+        )
+
         total_spawned = len(self._seen_vehicle_ids)
         completed_vehicles = max(0, total_spawned - len(vehicles))
 
@@ -226,9 +310,13 @@ class LiveSimSession:
             scenario=self.scenario,
             controller_name=self.controller_key,
             selected_action=selected_action,
-            current_group=int(info.get("current_group", base_env._current_group)),
-            green_elapsed=int(info.get("green_elapsed", base_env._green_elapsed)),
+            current_group=current_group,
+            green_elapsed=green_elapsed,
             tls_state=tls_state,
+            ns_countdown=ns_cd,
+            ew_countdown=ew_cd,
+            next_decision_in=next_dec,
+            min_green_remaining=min_rem,
             waiting_time=waiting_time,
             queue_length=queue_length,
             vehicle_count=len(vehicles),
@@ -236,7 +324,11 @@ class LiveSimSession:
             completed_vehicles=completed_vehicles,
             waiting_vehicles=waiting_vehicles,
             terminated=self.terminated,
+            approach_queues=approach_queues,
+            approach_waits=approach_waits,
+            decision_reason=reason,
             vehicles=vehicles,
+            prev_vehicles=self._prev_vehicles,
         )
 
     def close(self) -> None:

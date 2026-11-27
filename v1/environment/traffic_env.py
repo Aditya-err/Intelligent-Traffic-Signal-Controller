@@ -116,6 +116,7 @@ class SumoTrafficEnv(gym.Env):
         wait_weight: float = 0.6,
         queue_weight: float = 0.4,
         sumo_seed: int = 42,
+        random_depart_offset: int = 0,
     ) -> None:
         super().__init__()
         self.sumocfg_path = Path(sumocfg_path or DEFAULT_SUMOCFG).resolve()
@@ -134,6 +135,7 @@ class SumoTrafficEnv(gym.Env):
         self.wait_weight = float(wait_weight)
         self.queue_weight = float(queue_weight)
         self.sumo_seed = int(sumo_seed)
+        self.random_depart_offset = int(random_depart_offset)
 
         self.action_space = spaces.Discrete(2)
         self.observation_space = spaces.Box(
@@ -187,6 +189,8 @@ class SumoTrafficEnv(gym.Env):
             "--quit-on-end",
             "true",
         ]
+        if self.random_depart_offset > 0:
+            cmd.extend(["--random-depart-offset", str(self.random_depart_offset)])
         traci.start(cmd, label=self._label)
         self._conn = traci.getConnection(self._label)
 

@@ -16,7 +16,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from dashboard.canvas_viz import (  # noqa: E402
-    build_live_canvas_html,
+    build_realtime_canvas_html,
     get_diagnostic_rows,
 )
 from dashboard.data_loader import (  # noqa: E402
@@ -29,7 +29,7 @@ from dashboard.data_loader import (  # noqa: E402
     load_dashboard_datasets,
 )
 from dashboard.intersection_viz import create_indian_intersection_figure  # noqa: E402
-from dashboard.live_sim import LiveSimSession  # noqa: E402
+from dashboard.live_server import LiveSimBridge  # noqa: E402
 
 
 st.set_page_config(
@@ -107,6 +107,10 @@ def _go_to_simulation() -> None:
     st.session_state["nav_section"] = "Traffic Simulation"
 
 
+def _go_to_analytics() -> None:
+    st.session_state["nav_section"] = "Performance Analytics"
+
+
 def render_overview(summary_df: pd.DataFrame) -> None:
     st.markdown(
         """
@@ -123,12 +127,17 @@ def render_overview(summary_df: pd.DataFrame) -> None:
         unsafe_allow_html=True,
     )
 
-    c_btn, _ = st.columns([1.6, 3.4])
-    c_btn.button(
+    c_btn1, c_btn2, _ = st.columns([1.5, 1.5, 2.0])
+    c_btn1.button(
         "▶ Launch Live 2D Simulation",
         type="primary",
         use_container_width=True,
         on_click=_go_to_simulation,
+    )
+    c_btn2.button(
+        "📊 Explore Performance Analytics",
+        use_container_width=True,
+        on_click=_go_to_analytics,
     )
 
     st.subheader("Best Controller by Traffic Demand (Phase 8 Benchmark)")
@@ -173,20 +182,16 @@ def render_overview(summary_df: pd.DataFrame) -> None:
             """
         )
 
+    st.subheader("How Reinforcement Learning Controls the Traffic Signal")
+    s1, s2, s3 = st.columns(3)
+    s1.info("**1. Observe Traffic**\nSUMO reports queue lengths & waiting times on all 8 incoming lanes plus the active phase.")
+    s2.info("**2. Select Action**\nThe RL agent chooses `0` (North–South green) or `1` (East–West green) to minimize queues.")
+    s3.info("**3. Safe Signal Change**\nSafety rules enforce `10 s` min green, `3 s` yellow, and `2 s` all-red before switching.")
 
-def _get_or_create_live_session(scenario: str, controller_key: str) -> LiveSimSession:
-    session: LiveSimSession | None = st.session_state.get("live_sim_session")
-    if (
-        session is None
-        or session.scenario != scenario
-        or session.controller_key != controller_key
-    ):
-        if session is not None:
-            session.close()
-        session = LiveSimSession(scenario=scenario, controller_key=controller_key)
-        session.reset(warmup_steps=20)  # 20s warmup (1s/step) so vehicles are visible immediately
-        st.session_state["live_sim_session"] = session
-    return session
+
+@st.cache_resource
+def _get_sim_bridge() -> LiveSimBridge:
+    return LiveSimBridge()
 
 
 def render_simulation(summary_df: pd.DataFrame) -> None:
@@ -210,62 +215,33 @@ def render_simulation(summary_df: pd.DataFrame) -> None:
         speed_label = st.selectbox("Simulation Speed", ["1x", "2x", "4x"], index=0)
 
     try:
-        session = _get_or_create_live_session(scenario, ctrl)
+        bridge = _get_sim_bridge()
+        bridge.ensure_session(scenario, ctrl)
+        bridge.set_speed(speed_label)
 
         b1, b2, b3, b4, b5 = st.columns([1, 1, 1, 1, 2])
         if b1.button("▶ Start", type="primary", use_container_width=True):
-            session.is_running = True
+            bridge.start()
         if b2.button("⏸ Pause", use_container_width=True):
-            session.is_running = False
+            bridge.pause()
         if b3.button("⏯ Resume", use_container_width=True):
-            if not session.terminated:
-                session.is_running = True
+            bridge.start()
         if b4.button("↺ Reset", use_container_width=True):
-            session.is_running = False
-            session.reset(warmup_steps=20)
+            bridge.reset(warmup_steps=20)
 
+        is_running, is_terminated = bridge.get_status()
         status_text = (
             "COMPLETED"
-            if session.terminated
-            else ("RUNNING" if session.is_running else "PAUSED")
+            if is_terminated
+            else ("RUNNING" if is_running else "PAUSED")
         )
         b5.markdown(f"**Status:** `{status_text}` · **Speed:** `{speed_label}`")
 
-        run_interval = (
-            {"1x": 0.5, "2x": 0.25, "4x": 0.15}[speed_label]
-            if (session.is_running and not session.terminated)
-            else None
-        )
-        steps_per_tick = 2 if speed_label == "4x" else 1
+        # Persistent unchanging HTML string -> Streamlit NEVER destroys/recreates iframe -> ZERO BLINKING
+        components.html(build_realtime_canvas_html(bridge.state_url), height=820)
 
-        @st.fragment(run_every=run_interval)
-        def _live_viewport() -> None:
-            if session.is_running and not session.terminated:
-                for _ in range(steps_per_tick):
-                    if session.terminated:
-                        break
-                    session.step_once()
-
-            snap = session.snapshot
-            assert snap is not None
-
-            action_lbl = "0: North-South" if snap.selected_action == 0 else "1: East-West"
-            phase_lbl = "North-South" if snap.current_group == 0 else "East-West"
-
-            m1, m2, m3, m4, m5, m6 = st.columns(6)
-            m1.metric("Sim Clock", f"{snap.sim_time} s")
-            m2.metric("Active Controller", CONTROLLER_DISPLAY_NAMES[snap.controller_name])
-            m3.metric("Total Spawned", f"{snap.total_spawned}")
-            m4.metric("Active Vehicles", f"{snap.vehicle_count}")
-            m5.metric("Completed", f"{snap.completed_vehicles}")
-            m6.metric("Waiting / Queue", f"{snap.waiting_vehicles} / {snap.queue_length}")
-
-            components.html(build_live_canvas_html(snap), height=640)
-
-            st.caption(
-                f"**Selected Action:** `{action_lbl}` · **Current Signal Phase:** `{phase_lbl}` "
-                f"(Green elapsed: `{snap.green_elapsed} s`) · **Live SUMO TLS State:** `{snap.tls_state}`"
-            )
+        snap = bridge.get_snapshot()
+        if snap is not None:
             with st.expander("TraCI Vehicle & Viewport Diagnostics", expanded=False):
                 diag_rows = get_diagnostic_rows(snap)
                 rendered_cnt = sum(
@@ -280,15 +256,12 @@ def render_simulation(summary_df: pd.DataFrame) -> None:
                         use_container_width=True,
                         hide_index=True,
                     )
-            if snap.terminated:
-                st.success("Simulation episode completed (1800 s). Click Reset to replay.")
-
-        _live_viewport()
 
         st.info(
-            "**How to understand this view?** Vehicles spawn from all four approaches (N, S, E, W) "
-            "and drive on the **left** (Indian LHT). Each N/S/E/W signal head shows **Red (top), Yellow (middle), "
-            "and Green (bottom)** directly from SUMO. Use **Start / Pause / Resume / Reset** to control simulation time."
+            "**How to understand this view?** Vehicles spawn randomly from all four approaches (N, S, E, W) "
+            "and drive on the **left** (Indian LHT). Double yellow lines divide opposing traffic, white zebra crossings "
+            "mark the stop zones, and each N/S/E/W signal head shows **Red (top), Yellow (middle), and Green (bottom)** "
+            "with a live SUMO countdown timer."
         )
 
     except Exception as exc:  # noqa: BLE001
@@ -538,9 +511,10 @@ def render_statistics(
         st.warning("Statistical comparison CSV (`final_eval_stats.csv`) not found.")
 
     st.info(
-        "**Statistical Limitation:** Paired $t$-tests and permutation tests are reported without "
-        "Bonferroni multiple-comparison adjustment; borderline $p$-values (`0.03–0.04`) on High demand "
-        "should be interpreted conservatively."
+        "**How to understand these statistics?** **Mean** is the 10-seed average; **Std** measures spread across seeds; "
+        "**95% CI** is the range where the true mean lies with 95% confidence; **p-value < 0.05** means the difference vs "
+        "Fixed-Time is unlikely due to random chance. *Limitation:* Paired t-tests and permutation tests are reported "
+        "without Bonferroni multiple-comparison adjustment, so borderline p-values (0.03–0.04) should be read conservatively."
     )
 
     st.subheader("Full Summary Table (Mean, Std, 95% CI)")
@@ -589,8 +563,11 @@ def main() -> None:
         else None
     )
 
-    if section != "Traffic Simulation" and "live_sim_session" in st.session_state:
-        st.session_state["live_sim_session"].is_running = False
+    if section != "Traffic Simulation":
+        try:
+            _get_sim_bridge().pause()
+        except Exception:  # noqa: BLE001
+            pass
 
     if section == "Overview":
         render_overview(summary_df)

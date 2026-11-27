@@ -1,0 +1,10 @@
+controller,demand,seed,duration_s,avg_waiting_time_s,avg_queue_length,avg_travel_time_s,throughput_vph,vehicles_arrived,vehicles_remaining,j1_avg_wait_s,j2_avg_wait_s,j3_avg_wait_s,teleports,collisions,max_vehicle_wait_s,gridlock_warning,log_warnings
+dqn,low,1001,3600,11.8,2.49,91.94,692.0,692,14,6.44,6.2,6.06,0,0,46.0,False,0
+dqn,low,1002,3600,12.1,2.66,94.26,705.0,705,20,6.26,6.54,6.2,0,0,46.0,False,0
+dqn,low,1003,3600,10.98,2.43,91.62,692.0,692,18,5.66,5.65,6.86,0,0,45.0,False,0
+dqn,medium,1001,3600,11.06,4.34,92.02,1309.0,1309,33,6.29,5.45,5.67,0,0,51.0,False,0
+dqn,medium,1002,3600,11.05,4.35,93.58,1299.0,1299,41,6.1,5.53,5.43,0,0,42.0,False,0
+dqn,medium,1003,3600,10.66,4.24,92.73,1287.0,1287,50,5.83,5.39,5.57,0,0,42.0,False,0
+dqn,high,1001,3600,11.12,5.35,93.11,1627.0,1627,41,5.95,5.48,5.76,0,0,48.0,False,0
+dqn,high,1002,3600,11.57,5.57,95.03,1601.0,1601,36,5.87,5.96,5.98,0,0,55.0,False,0
+dqn,high,1003,3600,11.62,5.71,94.68,1656.0,1656,33,6.13,5.78,5.86,0,0,44.0,False,0

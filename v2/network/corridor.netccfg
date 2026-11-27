@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='utf-8'?>
+<configuration>
+  <input>
+    <node-files value="corridor.nod.xml" />
+    <edge-files value="corridor.edg.xml" />
+  </input>
+  <output>
+    <output-file value="corridor.net.xml" />
+  </output>
+  <processing>
+    <lefthand value="true" />
+    <no-turnarounds value="true" />
+    <crossings.guess value="true" />
+    <walkingareas value="true" />
+    <junctions.corner-detail value="5" />
+  </processing>
+  <tls_building>
+    <tls.default-type value="static" />
+    <tls.green.time value="25" />
+    <tls.yellow.time value="3" />
+    <tls.allred.time value="2" />
+  </tls_building>
+</configuration>

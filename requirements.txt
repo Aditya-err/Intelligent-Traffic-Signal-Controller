@@ -1,10 +1,9 @@
-# Phase 2–9: SUMO + TraCI + Gymnasium + Evaluation + CPU PyTorch DQN + Dashboard
-numpy>=2.4.0
-gymnasium>=1.4.0
-traci==1.28.0
-sumolib==1.28.0
-matplotlib>=3.8.0
-torch>=2.2.0  # CPU-only wheel (--index-url https://download.pytorch.org/whl/cpu)
-pandas>=2.2.0
-streamlit>=1.35.0
-plotly>=5.20.0
+numpy>=1.26
+pandas>=2.1
+torch>=2.2
+streamlit>=1.35
+plotly>=5.20
+matplotlib>=3.8
+scipy>=1.11
+traci>=1.20
+sumolib>=1.20

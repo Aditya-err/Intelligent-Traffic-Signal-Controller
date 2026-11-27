@@ -1,10 +1,18 @@
 """Phase 10 tests for 1-second live 2D HTML5 Canvas SUMO simulation."""
 
 import hashlib
+import json
 from pathlib import Path
+import time
 import unittest
+import urllib.request
 
-from dashboard.canvas_viz import build_live_canvas_html, get_diagnostic_rows
+from dashboard.canvas_viz import (
+    build_live_canvas_html,
+    build_realtime_canvas_html,
+    get_diagnostic_rows,
+)
+from dashboard.live_server import LiveSimBridge
 from dashboard.live_sim import LiveSimSession
 
 
@@ -72,8 +80,14 @@ class TestLive2DSimulation(unittest.TestCase):
                 )
                 self.assertTrue(moved, "Vehicles did not move between consecutive 1s steps")
 
-                html = build_live_canvas_html(snap2)
+                html = build_live_canvas_html(snap2, duration_ms=420)
                 self.assertIn("<canvas id=\"simCanvas\"", html)
+                self.assertGreaterEqual(snap2.ns_countdown, 0)
+                self.assertGreaterEqual(snap2.ew_countdown, 0)
+                self.assertGreaterEqual(snap2.next_decision_in, 0)
+                self.assertEqual(set(snap2.approach_queues.keys()), {"N", "S", "E", "W"})
+                self.assertTrue(len(snap2.decision_reason) > 0)
+                self.assertGreater(len(snap2.prev_vehicles), 0)
                 for r in get_diagnostic_rows(snap2):
                     if r["rendered_status"] == "RENDERED":
                         self.assertIn(r["vehicle_id"], html)
@@ -109,6 +123,33 @@ class TestLive2DSimulation(unittest.TestCase):
         finally:
             session.close()
             self.assertFalse(session.is_running)
+
+    def test_realtime_http_bridge_zero_blink_state(self) -> None:
+        bridge = LiveSimBridge()
+        try:
+            bridge.ensure_session("medium", "dqn_curriculum")
+            html = build_realtime_canvas_html(bridge.state_url)
+            self.assertIn(bridge.state_url, html)
+
+            with urllib.request.urlopen(bridge.state_url, timeout=5) as resp:
+                data0 = json.loads(resp.read().decode("utf-8"))
+            self.assertGreaterEqual(data0["sim_time"], 20)
+            self.assertGreater(len(data0["vehicles"]), 0)
+
+            bridge.set_speed("4x")
+            bridge.start()
+            time.sleep(0.7)
+            bridge.pause()
+            with urllib.request.urlopen(bridge.state_url, timeout=5) as resp:
+                data1 = json.loads(resp.read().decode("utf-8"))
+            self.assertGreater(data1["sim_time"], data0["sim_time"])
+
+            bridge.reset(warmup_steps=20)
+            with urllib.request.urlopen(bridge.state_url, timeout=5) as resp:
+                data_reset = json.loads(resp.read().decode("utf-8"))
+            self.assertEqual(data_reset["sim_time"], 20)
+        finally:
+            bridge.stop()
 
 
 if __name__ == "__main__":

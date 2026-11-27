@@ -11,24 +11,13 @@ env/
 # Conda / Environment artifacts
 .conda/
 
-# SUMO generated / runtime outputs
-simulation/network/*.net.xml
-reports/*.xml
-reports/*.csv
-reports/*.json
-reports/*.png
+# SUMO generated / runtime route caches & logs
+v1/simulation/network/*.net.xml
+v1/reports/*.xml
+v2/traffic/*.rou.xml
 *.log
 
-# RL Models & Checkpoints
-models/*.pt
-models/*.pth
-models/*.onnx
-models/*.zip
-models/*.json
-
 # Data & Caches
-data/*.csv
-data/*.parquet
 .cache/
 
 # IDEs & OS

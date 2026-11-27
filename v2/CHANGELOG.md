@@ -1,0 +1,9 @@
+# Changelog — Intelligent-Traffic-RL v2
+
+## Summary of Changes from v1 to v2
+- **Network:** Upgraded from a single 4-way intersection (`v1/`, tagged `v1.0`) to a **3-junction (`J1`, `J2`, `J3`) Indian Left-Hand Traffic (LHT) arterial corridor** with curved Bezier road segments (`215.9 m – 298.1 m`), 2 motorized lanes + `2.0 m` sidewalks per direction, and zebra pedestrian crossings.
+- **Traffic & Pedestrians:** Added Poisson-style mixed Indian traffic (`45%` motorcycle, `25%` car, `10%` auto, `10%` bus, `10%` truck) across 3 demand levels (`low=720`, `medium=1330`, `high=1660` veh/hr), separate `TRAIN_SEEDS` (`1–50`) and `EVAL_SEEDS` (`1001–1010`), plus zebra-crossing pedestrians (`120` ped/hr).
+- **Baselines & Runner:** Added `FixedTimeController` (`25 s` NS / `20 s` EW), `ActuatedController` (SUMO built-in `type="actuated"`), and a single reusable `run_episode()` runner.
+- **Shared DQN (Parameter Sharing):** Replaced v1's single-junction tabular/DQN agents with **one shared MLP (`10 → 128 → 64 → 2`)** across `J1`, `J2`, `J3`, an external hard safety layer (`10 s` min green, `3 s` yellow, `2 s` all-red), 4-stage curriculum training, and exact linear epsilon decay (`1.0 → 0.05`).
+- **Visualization:** Replaced flickering Plotly/Streamlit reruns with a **60 FPS HTML5 Canvas 2D replay viewer** (`st.components.v1.html`) driven by pre-recorded 0.5 s TraCI JSON clips, featuring rotated multi-type vehicle sprites, live 3-lamp traffic lights with countdowns, pedestrian dots, playback speed controls, and an RL Decision Panel.
+- **Final Evaluation & Statistics:** Evaluated all 3 controllers × 3 demands × 10 held-out seeds (`1001–1010`), added 95% CIs, paired t-tests, exact `2^10 = 1024` sign-flip permutation tests, Holm-Bonferroni correction, `Direction` labels, and a 6-page Streamlit dashboard.
