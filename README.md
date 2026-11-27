@@ -114,6 +114,7 @@ Intelligent-Traffic-RL/
 ├── requirements.txt              # Python dependencies
 ├── .gitignore
 ├── v1/                           # Archived v1 single-intersection project (tag v1.0)
+├── videos/                       # 5 compressed (<10 MB) demo MP4 recordings
 └── v2/                           # Main 3-junction curved corridor project
     ├── config.py                 # Geometry, traffic, safety & DQN hyperparameters
     ├── network/                  # Corridor XMLs + build_network.py
