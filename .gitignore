@@ -17,6 +17,9 @@ v1/reports/*.xml
 v2/traffic/*.rou.xml
 *.log
 
+# Large local demo recordings (>100 MB GitHub limit; upload via GitHub web README editor)
+videos/*.mp4
+
 # Data & Caches
 .cache/
 

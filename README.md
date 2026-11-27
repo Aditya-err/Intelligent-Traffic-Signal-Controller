@@ -25,6 +25,15 @@ This project trains a **Deep Q-Network (DQN)** agent to observe live queues and 
 ### Side-by-Side Compare Mode (Fixed-Time vs Shared DQN)
 ![v2 Side-by-Side Compare](v2/docs/images/v2_side_by_side_compare.png)
 
+### Demo Video Recordings (`videos/`)
+1. **Traffic Simulation — Zoomed Junction (`Traffic Simulation-1.mp4`)** — Live vehicles, brake/headlights, pedestrians, countdowns, and RL Decision Panel.
+2. **Traffic Simulation — Full Corridor (`Full Corridor.mp4`)** — All 3 curved junctions (`J1–J2–J3`) running simultaneously.
+3. **Traffic Simulation — Extended Flow (`Traffic Simulation-2.mp4`)** — Multi-junction coordination across demand transitions.
+4. **Side-by-Side Compare Mode (`Side-by-Side Compare Mode.mp4`)** — Synchronized Fixed-Time vs Shared DQN comparison.
+5. **Analytics & Statistical Results (`Statistical Results & Overview - Controller Comparison & Training Analysis.mp4`)** — Overview, 95% CI charts, training curves, and Holm-corrected p-values.
+
+> **Note:** Three of the raw screen recordings (`155–211 MB`) exceed GitHub's `100 MB` file limit, so they are kept locally in `videos/`. Compress them under `100 MB` (or `10 MB` on free GitHub) and drag-and-drop them into GitHub's `README.md` editor to embed playable videos.
+
 ### Controller Comparison (10 Held-Out Seeds, Mean ± 95% CI)
 ![v2 Controller Comparison](v2/docs/images/v2_controller_comparison.png)
 
